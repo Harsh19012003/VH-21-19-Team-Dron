@@ -1,0 +1,42 @@
+{% extends "layout.html" %}
+
+{% block title %}
+    Detail
+{% endblock %}
+
+{% block main %}
+    <form action="/detail" method="post">
+       <form>
+  <div class="form-group row">
+    <label for="inputhsc" class="col-sm-2 col-form-label">HSC Score:</label>
+    <div class="col-sm-10">
+      <input type="float" class="form-control" id="inputscoreh" placeholder="Score">
+    </div>
+  </div>
+  <div class="form-group row">
+    <label for="inputjee" class="col-sm-2 col-form-label">JEE/MHT-CET Score:</label>
+    <div class="col-sm-10">
+      <input type="float" class="form-control" id="inputscorej" placeholder="Score">
+    </div>
+  </div>
+  <div class="form-group row">
+    <label for="inputjee" class="col-sm-2 col-form-label">Preferred Location</label>
+    <div class="col-sm-10">
+      <input type="float" class="form-control" id="inputscorej" display="flex" placeholder="Preference 1">
+       <input type="float" class="form-control" id="inputscorej" display="flex" placeholder="Preference 2">
+        <input type="float" class="form-control" id="inputscorej" display="flex"placeholder="Preference 3">
+
+    </div>
+
+  </div>
+
+
+
+  <div class="form-group row">
+    <div class="col-sm-10">
+      <button type="submit" class="btn btn-primary">Proceed</button>
+    </div>
+  </div>
+</form>
+    </form>
+{% endblock %}
