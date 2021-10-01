@@ -9,3 +9,4 @@ team members include :
 * Tejas Wani 
 
 
+Situation as of now : we have setup our flask and other utilites 
