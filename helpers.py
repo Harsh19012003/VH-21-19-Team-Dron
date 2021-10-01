@@ -1,6 +1,7 @@
 import os
 import requests
 import urllib.parse
+import json
 
 from flask import redirect, render_template, request, session
 from functools import wraps
@@ -87,3 +88,28 @@ def password_check(ps):
         return True
     else:
         return False
+
+def user_location():
+    request_url = 'https://geolocation-db.com/jsonp/'
+    response = requests.get(request_url)
+    result = response.content.decode()
+    result = result.split("(")[1].strip(")")
+    result  = json.loads(result)
+    print(result)
+    return result
+
+def lookdata():
+    # Contact API
+    try:
+        url = f"https://wittypanda.github.io/data_api/csvjson.json"
+        response = requests.get(url)
+        response.raise_for_status()
+    except requests.RequestException:
+        return None
+
+    # Parse response
+    try:
+        data = response.json()
+        return data
+    except (KeyError, TypeError, ValueError):
+        return None

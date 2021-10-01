@@ -7,7 +7,7 @@ from datetime import datetime
 from werkzeug.exceptions import default_exceptions, HTTPException, InternalServerError
 from werkzeug.security import check_password_hash, generate_password_hash
 
-from helpers import apology, login_required, lookup, usd, password_check
+from helpers import apology, login_required, lookup, usd, password_check, user_location, lookdata
 
 app = Flask(__name__)
 app.config["TEMPLATES_AUTO_RELOAD"] = True
@@ -44,12 +44,10 @@ except sqlite3.Error as error:
     print("Error while connecting to sqlite", error)
 
 
-#db.execute("""CREATE TABLE users (id INTEGER, username TEXT NOT NULL, hash TEXT NOT NULL, PRIMARY KEY(id))""")
-#db.execute("""CREATE TABLE users (id INTEGER, username TEXT NOT NULL, hash TEXT NOT NULL, PRIMARY KEY(id))""")
-print("AAAAAAAAAAAAAAAAAAAAAAAa")
-db.execute("SELECT * FROM users")
-print(db.fetchall())
 print("table succesfull")
+
+data = lookdata()
+print(data)
 
 """
 finally:
@@ -79,13 +77,21 @@ def login():
         # Query database for username
         db.execute("SELECT * FROM users WHERE username = ?", [request.form.get("username")])
         rows = db.fetchall()
+        print("BBBBBBBBB")
         print(rows)
+        #rows[""]
         # Ensure username exists and password is correct
-        if len(rows) != 1 or not check_password_hash(rows[0]["hash"], request.form.get("password")):
+        a = request.form.get("password") 
+        # or not check_password_hash(rows[0]["hash"] == 
+        if len(rows) != 1:
             return apology("invalid username and/or password", 400)
 
         # Remember which user has logged in
-        session["user_id"] = rows[0]["id"]
+        session["user_id"] = rows[0][0]
+
+        print("AAAAAAAAAAAAAAAAAAAAAAAa")
+        db.execute("SELECT * FROM users")
+        print(db.fetchall())
 
         # Redirect user to home page
         return redirect("/")
@@ -93,17 +99,6 @@ def login():
     # User reached route via GET (as by clicking a link or via redirect)
     else:
         return render_template("login.html")
-
-
-@app.route("/logout")
-def logout():
-    # Log user out
-
-    # Forget any user_id
-    session.clear()
-
-    # Redirect user to login form
-    return redirect("/")
 
 
 @app.route("/register", methods=["GET", "POST"])
@@ -115,9 +110,10 @@ def register():
 
         # Creat variables
         username = request.form.get("username")
-        type(username)
+        #type(username)
         password = request.form.get("password")
         confirmation = request.form.get("confirmation")
+        email = request.form.get("confirmation")
 
         # Ensure user has written username
         if not username:
@@ -149,14 +145,43 @@ def register():
             return apology("Password Requirement")
 
         # Register user by storing it in database. Here, javascript can be added.
-        db.execute("INSERT INTO users (username, hash) VALUES (?, ?)", [username, generate_password_hash(password)])
-        print("BBBBBBBBB")
-        print(db.fetchall())
+        db.execute("INSERT INTO users (username, hash, email) VALUES (?, ?, ?)", [username, generate_password_hash(password), email])
         return redirect("/")
 
     # User reached route via GET (as by clicking a link)
     else:
         return render_template("register.html")
+
+@app.route("/details", methods=["GET", "POST"])
+def details():
+    # Accept user details
+
+    # User reached route via POST (as by submitting a form via POST)
+    if request.method == "POST":
+        hsc_score = request.form.get("hsc_score")
+        jee_cet_score = request.form.get("jee_cet_score")
+        p1 = request.form.get("p1")
+        p2 = request.form.get("p2")
+        p3= request.form.get("p3")
+
+        iplocation = user_location()
+        print(iplocation)
+        return redirect("/")
+    
+    else:
+        iplocation = user_location()
+        print(iplocation)
+        return render_template("details.html")
+
+@app.route("/logout")
+def logout():
+    # Log user out
+
+    # Forget any user_id
+    session.clear()
+
+    # Redirect user to login form
+    return redirect("/")
 
 
 def errorhandler(e):
@@ -164,7 +189,6 @@ def errorhandler(e):
     if not isinstance(e, HTTPException):
         e = InternalServerError()
     return apology(e.name, e.code)
-
 
 # Listen for errors
 for code in default_exceptions:
