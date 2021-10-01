@@ -101,7 +101,7 @@ def user_location():
 def lookdata():
     # Contact API
     try:
-        url = f"https://wittypanda.github.io/data_api/csvjson.json"
+        url = f"https://harsh19012003.github.io/hostjson/mydata.json"
         response = requests.get(url)
         response.raise_for_status()
     except requests.RequestException:

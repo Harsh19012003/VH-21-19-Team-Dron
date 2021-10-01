@@ -26,9 +26,10 @@ app.config["SESSION_PERMANENT"] = False
 app.config["SESSION_TYPE"] = "filesystem"
 Session(app)
 
-conn = sqlite3.connect("database.db")
-db = conn.cursor()
 
+# Connecting to database
+conn = sqlite3.connect("database.db", timeout=50)
+db = conn.cursor()
 try:
     sqliteConnection = sqlite3.connect('database.db', check_same_thread=False)
     db = sqliteConnection.cursor()
@@ -38,34 +39,42 @@ try:
     db.execute(sqlite_select_Query)
     record = db.fetchall()
     print("SQLite Database Version is: ", record)
-    
-
 except sqlite3.Error as error:
     print("Error while connecting to sqlite", error)
 
 
-print("table succesfull")
+#db.execute("""CREATE TABLE 'info' ('id' integer PRIMARY KEY AUTOINCREMENT NOT NULL, 'rank' integer, 'institute' text, 'course' text, 'cutoff' real, 'exam' text)""")
+print("table successfull")
 
-data = lookdata()
-print(data)
 
-"""
-finally:
-    if sqliteConnection:
-        sqliteConnection.close()
-        print("The SQLite connection is closed")
-"""
+# Insert into database's info
+rows = lookdata()
+#print(rows)
+print(len(rows))
+for row in rows:
+    institute = row["intitute name"]
+    course = row["branch"]
+    rank = row["rank"]
+    cutoff = row["cutoff"]
+    exam = row["Exam"]
+    srno = row["sr no"]
+    db.execute("INSERT INTO info (institute, course, rank, cutoff, exam) VALUES(?, ?, ?, ?, ?)", [institute, course, rank, cutoff, exam])
+
+db.execute("SELECT * FROM info")
+r = db.fetchall()
+print(r)
+print("SUCESS")
+
 
 @app.route("/login", methods=["GET", "POST"])
 def login():
-    # Log user in
+    # Logs user in
 
     # Forget any user_id
     session.clear()
 
     # User reached route via POST (as by submitting a form via POST)
     if request.method == "POST":
-
         # Ensure username was submitted
         if not request.form.get("username"):
             return apology("must provide username", 400)
@@ -79,9 +88,11 @@ def login():
         rows = db.fetchall()
         print("BBBBBBBBB")
         print(rows)
-        #rows[""]
+
         # Ensure username exists and password is correct
         a = request.form.get("password") 
+        print("AAAAAAAAAAAAAAAAAAAAAAA")
+        print(a)
         # or not check_password_hash(rows[0]["hash"] == 
         if len(rows) != 1:
             return apology("invalid username and/or password", 400)
@@ -89,7 +100,6 @@ def login():
         # Remember which user has logged in
         session["user_id"] = rows[0][0]
 
-        print("AAAAAAAAAAAAAAAAAAAAAAAa")
         db.execute("SELECT * FROM users")
         print(db.fetchall())
 
@@ -110,7 +120,6 @@ def register():
 
         # Creat variables
         username = request.form.get("username")
-        #type(username)
         password = request.form.get("password")
         confirmation = request.form.get("confirmation")
         email = request.form.get("confirmation")
@@ -152,26 +161,28 @@ def register():
     else:
         return render_template("register.html")
 
+
 @app.route("/details", methods=["GET", "POST"])
 def details():
     # Accept user details
 
     # User reached route via POST (as by submitting a form via POST)
     if request.method == "POST":
+        # Variable initialization
         hsc_score = request.form.get("hsc_score")
         jee_cet_score = request.form.get("jee_cet_score")
         p1 = request.form.get("p1")
         p2 = request.form.get("p2")
         p3= request.form.get("p3")
 
-        iplocation = user_location()
-        print(iplocation)
         return redirect("/")
     
     else:
+        # Coordinate tracked via IP address
         iplocation = user_location()
         print(iplocation)
         return render_template("details.html")
+
 
 @app.route("/logout")
 def logout():
@@ -185,7 +196,7 @@ def logout():
 
 
 def errorhandler(e):
-    """Handle error"""
+    # Basic error handeling
     if not isinstance(e, HTTPException):
         e = InternalServerError()
     return apology(e.name, e.code)
