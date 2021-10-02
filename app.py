@@ -83,11 +83,26 @@ data = pd.read_csv("Database1.csv")
 print(data)
 
 
-@app.route("/")
+@app.route("/index")
 @login_required
 def index():
     # Homepage
-    return render_template("index.html")
+    rows = [{ "sr no": 1,
+    "rank": 56584,
+    "cutoff": 95.5178877,
+    "institute name": "5418 - Guru Gobind Singh College of Engineering & Research Centre, Nashik.",
+    "branch": "Mechanical Engineering",
+    "Exam": "MHT-CET"
+  },
+  {
+    "sr no": 2,
+    "rank": 57702,
+    "cutoff": 91.4432402,
+    "institute name": "3218 - Aldel Education Trust's St. John College of Engineering & Management, Vevoor,\nPalghar",
+    "branch": "Electronics and Telecommunication\nEngg",
+    "Exam": "MHT-CET"
+  }]
+    return render_template("index.html", rows=rows)
 
 
 @app.route("/login", methods=["GET", "POST"])
@@ -129,7 +144,7 @@ def login():
         print(db.fetchall())
 
         # Redirect user to home page
-        return redirect("/details.html")
+        return redirect("/details")
 
     # User reached route via GET (as by clicking a link or via redirect)
     else:
@@ -200,6 +215,52 @@ def details():
         p1 = request.form.get("p1")
         p2 = request.form.get("p2")
         p3= request.form.get("p3")
+        print(p1, p2, p3)
+        
+        import pandas as pd
+
+        dt = pd.read_csv('Database2.csv', sep=",")
+
+        keywords = [p1]
+        searched_keywords = '|'.join(keywords)
+
+        branch = ["Computer Engineering"]
+        searched_branch = '|'.join(branch)
+
+
+        cutoff = ["83.35"]
+        cut = pd.to_numeric(cutoff)
+        searched_cutoff = '|'.join(cutoff)
+
+
+        def short_1():
+            data = dt[dt["Institute"].str.contains(searched_keywords) | dt["Institute"].str.contains(searched_keywords)] 
+            data.to_csv("sl1.csv",sep=",", index=False) 
+
+        short_1()
+
+        def short_2():
+            st = pd.read_csv("sl1.csv",sep=",")
+            alpha = st[st["Course Name"].str.contains(searched_branch) | st["Course Name"].str.contains(searched_branch)]
+            alpha.to_csv("sl2.csv",sep=",",index=False)
+
+        short_2()
+
+        def short_3():
+            import csv
+            import json
+
+            csvfile = open('sl2.csv', 'r')
+            jsonfile = open('sl2..json', 'w')
+
+            fieldnames = ("Sr.No","Rank","CUTOFF","Institute Name","Branch","Exam")
+            reader = csv.DictReader( csvfile, fieldnames)
+            for row in reader:
+                json.dump(row, jsonfile)
+                jsonfile.write('\n')
+
+
+        short_3()
         return redirect("/index")
     
     else:

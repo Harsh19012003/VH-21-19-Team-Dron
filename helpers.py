@@ -1,7 +1,9 @@
 import os
 import requests
 import urllib.parse
-import json
+import json 
+
+import pandas as pd
 
 from flask import redirect, render_template, request, session
 from functools import wraps
@@ -113,3 +115,38 @@ def lookdata():
         return data
     except (KeyError, TypeError, ValueError):
         return None
+
+dt = pd.read_csv('Database2.csv', sep=",")
+
+keywords = ["Mumbai"]
+searched_keywords = '|'.join(keywords)
+
+branch = ["Computer Engineering"]
+searched_branch = '|'.join(branch)
+
+
+cutoff = ["83.35"]
+cut = pd.to_numeric(cutoff)
+searched_cutoff = '|'.join(cutoff)
+
+# read the csv data into a dataframe 
+# change "," to the data separator in your csv file 
+#df = pd.read_csv("2006-data-8-8-2016.csv", sep=",")
+# filter the data: keep only the rows that contain one of the keywords 
+# in the position or the Job description columns
+#data = data[data["Institute"].str.contains(searched_keywords) | data["Institute"].str.contains(searched_keywords)] 
+# write the data back to a csv file 
+#data.to_csv("Sl1.csv",sep=",", index=False) 
+
+
+import csv
+import json
+
+csvfile = open('Database2.csv', 'r')
+jsonfile = open('file.json', 'w')
+
+fieldnames = ("Sr.No","Rank","CUTOFF","Institute Name","Exam")
+reader = csv.DictReader( csvfile, fieldnames)
+for row in reader:
+    json.dump(row, jsonfile)
+    jsonfile.write('\n')
