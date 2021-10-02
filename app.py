@@ -4,10 +4,11 @@ from flask import Flask, flash, redirect, render_template, request, session
 from flask_session import Session
 from tempfile import mkdtemp
 from datetime import datetime
+import pandas as pd
 from werkzeug.exceptions import default_exceptions, HTTPException, InternalServerError
 from werkzeug.security import check_password_hash, generate_password_hash
 
-from helpers import apology, login_required, lookup, usd, password_check, user_location, lookdata
+from helpers import apology, login_required, password_check, user_location, lookdata
 
 app = Flask(__name__)
 app.config["TEMPLATES_AUTO_RELOAD"] = True
@@ -19,7 +20,6 @@ def after_request(response):
     response.headers["Pragma"] = "no-cache"
     return response
 
-app.jinja_env.filters["usd"] = usd
 
 app.config["SESSION_FILE_DIR"] = mkdtemp()
 app.config["SESSION_PERMANENT"] = False
@@ -42,14 +42,16 @@ try:
 except sqlite3.Error as error:
     print("Error while connecting to sqlite", error)
 
-
+# Created a table one time use
 #db.execute("""CREATE TABLE 'info' ('id' integer PRIMARY KEY AUTOINCREMENT NOT NULL, 'rank' integer, 'institute' text, 'course' text, 'cutoff' real, 'exam' text)""")
-print("table successfull")
+#print("table successfull")
 
 
 # Insert into database's info
+
 rows = lookdata()
-#print(rows)
+"""
+print(rows)
 print(len(rows))
 for row in rows:
     institute = row["intitute name"]
@@ -58,12 +60,34 @@ for row in rows:
     cutoff = row["cutoff"]
     exam = row["Exam"]
     srno = row["sr no"]
-    db.execute("INSERT INTO info (institute, course, rank, cutoff, exam) VALUES(?, ?, ?, ?, ?)", [institute, course, rank, cutoff, exam])
+"""
+"""
+for row in rows:
+    #print([institute, course, rank, cutoff, exam])
+    db.execute("UPDATE 'info' SET (institute) = ?", [institute])
+    db.execute("UPDATE 'info' SET (course) = ?", [course])
+    db.execute("UPDATE 'info' SET (rank) = (?)", [rank])
+    db.execute("UPDATE 'info' SET (cutoff) = (?)", [cutoff])
+    db.execute("UPDATE 'info' SET (exam) = (?)", [exam])
+"""
+"""
+db.execute('DECLARE @i int = 0 WHILE @i < 200 BEGIN SET @i = @i + 1 institute = row["intitute name"] course = row["branch"] rank = row["rank"] cutoff = row["cutoff"] exam = row["Exam"] srno = row["sr no"] db.execute("INSERT INTO info (institute, course, rank, cutoff, exam) VALUES(?, ?, ?, ?, ?)", [institute, course, rank, cutoff, exam] END')
+"""
+#db.execute("SELECT * FROM info")
+#r = db.fetchall()
+#print(r)
+#print("SUCCESS")
 
-db.execute("SELECT * FROM info")
-r = db.fetchall()
-print(r)
-print("SUCESS")
+
+data = pd.read_csv("Database1.csv")
+print(data)
+
+
+@app.route("/")
+@login_required
+def index():
+    # Homepage
+    return render_template("index.html")
 
 
 @app.route("/login", methods=["GET", "POST"])
@@ -93,8 +117,9 @@ def login():
         a = request.form.get("password") 
         print("AAAAAAAAAAAAAAAAAAAAAAA")
         print(a)
-        # or not check_password_hash(rows[0]["hash"] == 
-        if len(rows) != 1:
+
+        #  or not check_password_hash(rows[0][2]) == check_password_hash(a)
+        if (len(rows) != 1):
             return apology("invalid username and/or password", 400)
 
         # Remember which user has logged in
@@ -104,7 +129,7 @@ def login():
         print(db.fetchall())
 
         # Redirect user to home page
-        return redirect("/")
+        return redirect("/details.html")
 
     # User reached route via GET (as by clicking a link or via redirect)
     else:
@@ -163,6 +188,7 @@ def register():
 
 
 @app.route("/details", methods=["GET", "POST"])
+@login_required
 def details():
     # Accept user details
 
@@ -174,8 +200,7 @@ def details():
         p1 = request.form.get("p1")
         p2 = request.form.get("p2")
         p3= request.form.get("p3")
-
-        return redirect("/")
+        return redirect("/index")
     
     else:
         # Coordinate tracked via IP address
